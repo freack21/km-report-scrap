@@ -21,7 +21,41 @@ function setConfigValue(key, value) {
   CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH));
 }
 
-const getStatus = async (id) => {
+const getMonthlyReportStatus = async (id) => {
+  try {
+    const response = await axios.request({
+      url:
+        "https://api.kampusmerdeka.kemdikbud.go.id/studi/monthly-reports?id_reg_penawaran=" +
+        (id || CONFIG.ID),
+      method: "get",
+      headers: {
+        Authorization: "Bearer " + CONFIG.cookie,
+      },
+    });
+    const result = response.data;
+
+    return {
+      result,
+      msg: "success get 'monthly report' data",
+      success: true,
+      code: 200,
+    };
+  } catch (err) {
+    let msg = err.message;
+    let code = err.status || 500;
+    if (err?.response?.data?.error?.message)
+      msg = err.response.data.error.message;
+    code = err.response.status;
+
+    return {
+      msg,
+      success: false,
+      code,
+    };
+  }
+};
+
+const getFinalReportStatus = async (id) => {
   try {
     const response = await axios.request({
       url:
@@ -32,7 +66,8 @@ const getStatus = async (id) => {
         Authorization: "Bearer " + CONFIG.cookie,
       },
     });
-    const data = response.data.data;
+    const result = response.data;
+    const data = result.data;
 
     let prevData = {};
     if (fs.existsSync("data.json"))
@@ -43,9 +78,9 @@ const getStatus = async (id) => {
     }
 
     return {
-      data,
+      result,
       status: data.status,
-      msg: "success get status data",
+      msg: "success get 'final report' data",
       success: true,
       code: 200,
     };
@@ -89,15 +124,32 @@ app.all("/set", (req, res) => {
 app.all("/exec", async (req, res) => {
   const id = req.query.id || req.body.id || req.headers.id;
 
-  const { data, status, msg, success, code } = await getStatus(id);
+  const monthlyReport = await getMonthlyReportStatus(id);
+  const finalReport = await getFinalReportStatus(id);
 
   return res.json({
-    msg,
-    data,
-    status,
-    code,
-    success,
+    msg: "success get data!",
+    monthlyReport,
+    finalReport,
+    code: 200,
+    success: true,
   });
+});
+
+app.all("/monthly", async (req, res) => {
+  const id = req.query.id || req.body.id || req.headers.id;
+
+  const monthlyReport = await getMonthlyReportStatus(id);
+
+  return res.json(monthlyReport);
+});
+
+app.all("/final", async (req, res) => {
+  const id = req.query.id || req.body.id || req.headers.id;
+
+  const finalReport = await getFinalReportStatus(id);
+
+  return res.json(finalReport);
 });
 
 app.use((req, res) => {
@@ -113,4 +165,4 @@ app.listen(PORT, () => {
   console.log("running at http://localhost:" + PORT);
 });
 
-setInterval(getStatus, 5000);
+setInterval(getFinalReportStatus, 5000);

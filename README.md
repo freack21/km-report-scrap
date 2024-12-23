@@ -4,10 +4,10 @@ This project is a scraper to fetch activity report data from Kampus Merdeka. The
 
 ## Features
 
-- Fetch activity report status from the Kampus Merdeka API
-- Save report data into a `data.json` file
+- Fetch activity (monthly / final) report status from the Kampus Merdeka API
+- Save final report data into a `data.json` file
 - Change configuration ID and cookie through an API endpoint
-- Provide an endpoint to manually trigger data fetching
+- Provide endpoints to manually trigger data fetching
 
 ## Installation
 
@@ -43,7 +43,9 @@ The application will run at `http://localhost:3000` (Port may vary based on `con
 
 - `GET /` - Check service status
 - `POST /set` - Change configuration ID and cookie
-- `GET /exec` - Manually trigger data fetching
+- `GET /exec` - Fetch activity (monthly / final) report data fetching
+- `GET /monthly` - Fetch monthly report status
+- `GET /final` - Fetch final report status
 
 ## Contribution
 
